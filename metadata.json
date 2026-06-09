@@ -1,0 +1,6 @@
+{
+  "name": "NEXUS AI — Future Career Universe",
+  "description": "An immersive, cinematic AI-powered career ecosystem that guides future talent, simulates careers, conducts mock interviews, and maps skill universes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

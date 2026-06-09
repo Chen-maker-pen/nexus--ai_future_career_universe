@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Outfit:wght@100..900&family=JetBrains+Mono:wght@100..800&family=Space+Grotesk:wght@300..700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Outfit", "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-luxury-gold: #F4DFC8; /* Warm Luxury Beige */
+  --color-luxury-gold-hover: #faebd9; /* Hover-brightened Beige */
+  --color-luxury-beige: #F4EAE0; /* Soft Elegant Beige */
+  --color-luxury-white: #FAF6F0; /* Luxury White */
+  --color-luxury-silver: #D9D9D9; /* Soft Silver */
+  --color-luxury-gray: #8C8C8C; /* Muted Gray */
+  --color-luxury-bronze: #C6A98A; /* Premium Bronze Accent */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  width: 100%;
+  background-color: #000000;
+  font-family: var(--font-sans);
+  font-size: 15.5px; /* Boost global base scale by 10% for crisp readability */
+  line-height: 1.6;
+  color: #ffffff;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dynamic display text pairing setup */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Maximize reading clarity for controls, forms, inputs, and buttons */
+input, select, textarea, button {
+  font-family: var(--font-sans);
+  font-size: 14.5px; /* Perfectly visible text size inside form elements */
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom luxury minimal scrollbar styling webkit-compliant */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(244, 223, 200, 0.12); /* Luxury subtle golden beige */
+  border-radius: 99px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 223, 200, 0.35); /* Elegant hover highlighted */
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+/* For Firefox compatibility */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(244, 223, 200, 0.12) transparent;
+}
+
+/* Optimized Hardware-Accelerated Custom Cursors */
+#custom-luxury-cursor-glow {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(244, 223, 200, 0.35);
+  background-color: rgba(244, 223, 200, 0.012);
+  mix-blend-mode: difference;
+  z-index: 9999;
+  will-change: transform;
+  transition: transform 0.08s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.25s force, background-color 0.25s, width 0.25s, height 0.25s, margin 0.25s;
+}
+#custom-luxury-cursor-glow.hovered {
+  width: 44px;
+  height: 44px;
+  margin: -6px 0 0 -6px;
+  border-color: rgba(244, 223, 200, 0.85);
+  background-color: rgba(244, 223, 200, 0.1);
+}
+
+#custom-luxury-cursor-dot {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #F4DFC8;
+  z-index: 10000;
+  will-change: transform;
+  transition: transform 0.015s linear, opacity 0.2s, background-color 0.2s;
+}
+#custom-luxury-cursor-dot.hovered {
+  opacity: 0.5;
+  background-color: #ffffff;
+}
+
+#custom-luxury-cursor-blob {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background-color: rgba(244, 223, 200, 0.018);
+  filter: blur(110px);
+  z-index: 1;
+  will-change: transform;
+  transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
