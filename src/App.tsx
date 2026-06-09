@@ -4,7 +4,7 @@ import {
   Sparkles, Compass, BrainCircuit, Award, Terminal, LayoutDashboard, 
   HelpCircle, User, CreditCard, Users, Mail, Send, Cpu, LogIn, ChevronRight, LogOut, FileText,
   Settings, Sliders, Volume2, Shield, Home, Grid, Briefcase, Clock, Check, Search, MapPin, TrendingUp,
-  X, Mic
+  X, Mic, ShieldCheck
 } from "lucide-react";
 
 import Lenis from "lenis";
@@ -21,6 +21,8 @@ import SpiderBackground from "./components/SpiderBackground";
 import ScrollReveal from "./components/ScrollReveal";
 import ScrollParallax from "./components/ScrollParallax";
 import ThreeDRobotAssistant from "./components/ThreeDRobotAssistant";
+import CareerPassport from "./components/CareerPassport";
+import { initPassport } from "./utils/passportStore";
 
 export default function App() {
   const [currentView, _setCurrentView] = useState("landing");
@@ -467,7 +469,15 @@ export default function App() {
       email: authenticatedUser.email,
       avatarSeed: authenticatedUser.role === 'employer' ? "recruiter" : "alex"
     });
-    
+
+    if (authenticatedUser.role === 'employee') {
+      initPassport(
+        authenticatedUser.name,
+        authenticatedUser.email,
+        authenticatedUser.onboardingData?.targetTitle
+      );
+    }
+
     if (authenticatedUser.role === 'employer') {
       setCurrentView("recruiter");
     } else {
@@ -707,7 +717,8 @@ export default function App() {
                 { id: "coach", label: "AI Coach", icon: Cpu },
                 { id: "simulation", label: "Sim Lab", icon: Terminal },
                 { id: "interview", label: "AI Interview", icon: BrainCircuit },
-                { id: "galaxy", label: "Skill Galaxy", icon: Compass }
+                { id: "galaxy", label: "Skill Galaxy", icon: Compass },
+                { id: "passport", label: "Career Passport", icon: ShieldCheck }
               ].map((lnk) => {
                 const IconComp = lnk.icon;
                 const isSel = currentView === lnk.id;
@@ -901,6 +912,15 @@ export default function App() {
             </motion.div>
           )}
 
+          {currentView === "passport" && user?.role === 'employee' && (
+            <motion.div
+              key="passport"
+              {...pageRevealTransition}
+            >
+              <CareerPassport />
+            </motion.div>
+          )}
+
           {currentView === "dashboard" && user?.role === 'employee' && (
             /* MULTIPAGE INTEGRATION BENTO DECK: Represents Dashboard, Community, Pricing, Analytics */
             <motion.div
@@ -1050,6 +1070,9 @@ export default function App() {
                       </button>
                       <button className="p-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer" onClick={() => setCurrentView("portfolio-builder")}>
                         <Compass className="w-4 h-4 text-white" /> Build ATS Resume
+                      </button>
+                      <button className="p-3.5 bg-luxury-gold/10 hover:bg-luxury-gold/20 border border-luxury-gold/30 text-luxury-gold hover:text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer" onClick={() => setCurrentView("passport")}>
+                        <ShieldCheck className="w-4 h-4" /> View Career Passport
                       </button>
                     </div>
                   </div>

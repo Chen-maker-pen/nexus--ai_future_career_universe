@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ShieldAlert, BookOpen, Send, Sparkles, Volume2, Mic, CheckCircle, BrainCircuit, RefreshCw, BarChart2 } from "lucide-react";
 import { InterviewQuestion, InterviewEvaluation } from "../types";
+import { recordInterviewScore } from "../utils/passportStore";
 
 export default function InterviewSimulator() {
   const [targetCareer, setTargetCareer] = useState("Quantum Systems Architect");
@@ -55,6 +56,8 @@ export default function InterviewSimulator() {
       if (response.ok) {
         const data = await response.json();
         setEvaluation(data);
+        const category = questions[currentIndex]?.category || "Technical";
+        recordInterviewScore(category, data.overallScore || 0, data.confidenceScore || 0);
       }
     } catch (e) {
       console.error("Failed submitting answer to evaluation API:", e);

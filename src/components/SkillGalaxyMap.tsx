@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Compass, ZoomIn, ZoomOut, RefreshCw, Star, Info, HelpCircle, Target } from "lucide-react";
 import { GALAXY_NODES } from "../data/galaxyData";
 import { GalaxyNode } from "../types";
+import { recordSkillEvidence, parseMarketDemand } from "../utils/passportStore";
 
 export default function SkillGalaxyMap() {
   const [nodes, setNodes] = useState<GalaxyNode[]>(GALAXY_NODES);
@@ -273,12 +274,14 @@ export default function SkillGalaxyMap() {
                   <button
                     id="btn-learn-star"
                     onClick={() => {
-                      setNodes(prev => prev.map(n => {
-                        if (n.id === selectedNode.id) {
-                          return { ...n, status: "mastered" };
-                        }
-                        return n;
-                      }));
+                      recordSkillEvidence(
+                        selectedNode.name,
+                        parseMarketDemand(selectedNode.marketDemand),
+                        "mastered"
+                      );
+                      setNodes(prev => prev.map(n =>
+                        n.id === selectedNode.id ? { ...n, status: "mastered" } : n
+                      ));
                       setSelectedNode(prev => prev ? { ...prev, status: "mastered" } : null);
                     }}
                     className={`flex-grow py-3 rounded-xl font-extrabold text-xs uppercase tracking-widest transition-all duration-300 cursor-pointer border ${

@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
-import { Sparkles, Terminal, Compass, Briefcase, Award, Zap, Cpu, ShieldCheck, Heart, User, Eye, ArrowRight, Activity, Layers, Globe } from "lucide-react";
+import { Sparkles, Terminal, Compass, Briefcase, Award, Zap, Cpu, ShieldCheck, Heart, User, Eye, ArrowRight, Activity, Layers, Globe, Download, EyeOff } from "lucide-react";
+import { generateNexusProposalPdf } from "../utils/generateProposalPdf";
 import ScrollReveal from "./ScrollReveal";
 import ScrollParallax from "./ScrollParallax";
 
@@ -199,6 +200,55 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         </div>
       </ScrollReveal>
 
+      {/* HERO DIFFERENTIATORS — What makes NEXUS unique */}
+      <ScrollReveal delay={0.25} yOffset={40}>
+        <div className="w-full max-w-6xl mt-32 text-left">
+          <div className="text-center md:text-left mb-10 space-y-2">
+            <span className="text-[10px] font-mono text-luxury-gold uppercase tracking-[0.25em]">WHY NEXUS WINS</span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
+              Three Features No Other Platform Has
+            </h2>
+            <p className="text-luxury-gray text-xs md:text-sm font-light mt-2">
+              We don't replace the resume — we replace trust in the resume.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-8 rounded-[30px] bg-[#0c0c0c]/90 border border-luxury-gold/20 space-y-4 hover:border-luxury-gold/40 transition-colors">
+              <ShieldCheck className="w-8 h-8 text-luxury-gold" />
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Verified Career Passport</h3>
+              <p className="text-xs text-luxury-gray leading-relaxed">
+                A live scorecard aggregating interview scores, simulation missions, skill galaxy alignment, and portfolio projects. Employers see proof, not claims.
+              </p>
+            </div>
+            <div className="p-8 rounded-[30px] bg-[#0c0c0c]/90 border border-emerald-500/20 space-y-4 hover:border-emerald-500/40 transition-colors">
+              <EyeOff className="w-8 h-8 text-emerald-400" />
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Blind Talent Radar</h3>
+              <p className="text-xs text-luxury-gray leading-relaxed">
+                Recruiters discover candidates by skill telemetry first. Identity stays hidden until shortlisting — eliminating bias and keyword filtering.
+              </p>
+            </div>
+            <div className="p-8 rounded-[30px] bg-[#0c0c0c]/90 border border-white/10 space-y-4 hover:border-luxury-gold/25 transition-colors">
+              <Zap className="w-8 h-8 text-luxury-gold" />
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Day One Challenge</h3>
+              <p className="text-xs text-luxury-gray leading-relaxed">
+                Employers inject real 2-hour micro-workflows into simulations. Candidates try the actual job before either side commits.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => generateNexusProposalPdf()}
+              className="px-8 py-4 rounded-xl font-bold bg-luxury-gold text-black hover:bg-luxury-gold-hover transition-all flex items-center gap-2 text-xs uppercase tracking-wider cursor-pointer shadow-[0_4px_25px_rgba(244,223,200,0.2)]"
+            >
+              <Download className="w-4 h-4" />
+              Download Full Proposal PDF
+            </button>
+          </div>
+        </div>
+      </ScrollReveal>
+
       {/* NEW SEC: VISUAL COMPARATIVE ANALYSIS GRID (Broken Past vs Nexus Future) */}
       <ScrollReveal delay={0.3} yOffset={45}>
         <div className="w-full max-w-6xl mt-32 text-left">
@@ -278,12 +328,21 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           <p className="text-xs md:text-sm text-luxury-gray max-w-2xl font-light">
             Authenticate your credentials or deploy an employer profile immediately. The Next-generation workspace awaits your calibration.
           </p>
-          <button 
-            onClick={() => onNavigate("auth")}
-            className="px-8 py-4 rounded-xl font-mono text-xs font-bold bg-white text-black hover:bg-neutral-200 transition-colors uppercase tracking-[0.1em] cursor-pointer"
-          >
-            INITIALIZE AUTHENTICATION SEC LEVEL 1
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 z-10">
+            <button 
+              onClick={() => onNavigate("auth")}
+              className="px-8 py-4 rounded-xl font-mono text-xs font-bold bg-white text-black hover:bg-neutral-200 transition-colors uppercase tracking-[0.1em] cursor-pointer"
+            >
+              INITIALIZE AUTHENTICATION SEC LEVEL 1
+            </button>
+            <button
+              onClick={() => generateNexusProposalPdf()}
+              className="px-8 py-4 rounded-xl font-mono text-xs font-bold bg-transparent border border-luxury-gold/40 text-luxury-gold hover:bg-luxury-gold/10 transition-colors uppercase tracking-[0.1em] cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download Proposal PDF
+            </button>
+          </div>
         </div>
       </ScrollReveal>
 

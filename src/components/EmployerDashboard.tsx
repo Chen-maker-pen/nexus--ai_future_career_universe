@@ -2,9 +2,19 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Building, Sparkles, Plus, Send, CheckCircle2, ChevronRight, BarChart2, 
-  Target, Zap, Briefcase, FileText, Globe, GraduationCap, Users, Trash2, Heart
+  Target, Zap, Briefcase, FileText, Globe, GraduationCap, Users, Trash2, Heart,
+  Eye, EyeOff, Radar, ShieldCheck, Clock
 } from "lucide-react";
 import { jsPDF } from "jspdf";
+import {
+  getBlindTalentPool,
+  shortlistBlindCandidate,
+  BlindTalentProfile,
+  getDayOneChallenges,
+  saveDayOneChallenge,
+  deleteDayOneChallenge,
+  DayOneChallenge,
+} from "../utils/passportStore";
 
 interface JobPost {
   id: string;
@@ -21,7 +31,7 @@ interface JobPost {
 
 export default function EmployerDashboard() {
   // Navigation: 'analytics' | 'hiring' | 'talent' | 'company'
-  const [activeTab, setActiveTab] = useState<'analytics' | 'hiring' | 'talent' | 'company'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'hiring' | 'talent' | 'blind-radar' | 'dayone' | 'company'>('blind-radar');
 
   // Company Profile State
   const [companyDetails, setCompanyDetails] = useState({
@@ -197,6 +207,54 @@ export default function EmployerDashboard() {
 
   const toggleSaveCandidate = (id: string) => {
     setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isSaved: !c.isSaved } : c));
+  };
+
+  // Blind Talent Radar
+  const [blindPool, setBlindPool] = useState<BlindTalentProfile[]>(() => getBlindTalentPool());
+
+  const handleShortlistBlind = (anonymousId: string) => {
+    const revealed = shortlistBlindCandidate(anonymousId);
+    if (revealed) {
+      setBlindPool(getBlindTalentPool());
+    }
+  };
+
+  // Day One Employer Challenge
+  const [dayOneChallenges, setDayOneChallenges] = useState<DayOneChallenge[]>(() => getDayOneChallenges());
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const [challengeRole, setChallengeRole] = useState("AI Core Synaptic Architect");
+  const [challengeDesc, setChallengeDesc] = useState("");
+  const [challengeTask1, setChallengeTask1] = useState("");
+  const [challengeTask2, setChallengeTask2] = useState("");
+
+  const handleCreateDayOneChallenge = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!challengeTitle.trim() || !challengeDesc.trim()) return;
+    const challenge: DayOneChallenge = {
+      id: `doc_${Date.now()}`,
+      employerName: companyDetails.name,
+      title: challengeTitle,
+      role: challengeRole,
+      description: challengeDesc,
+      duration: "2 hours",
+      difficulty: "Critical",
+      tasks: [
+        { id: `t1_${Date.now()}`, title: challengeTask1 || "Core Technical Task", description: challengeTask1 || "Complete the primary technical deliverable within the sprint window." },
+        { id: `t2_${Date.now() + 1}`, title: challengeTask2 || "Validation & Handoff", description: challengeTask2 || "Validate output against acceptance criteria and document findings." },
+      ],
+      createdAt: new Date().toISOString(),
+    };
+    saveDayOneChallenge(challenge);
+    setDayOneChallenges(getDayOneChallenges());
+    setChallengeTitle("");
+    setChallengeDesc("");
+    setChallengeTask1("");
+    setChallengeTask2("");
+  };
+
+  const handleDeleteChallenge = (id: string) => {
+    deleteDayOneChallenge(id);
+    setDayOneChallenges(getDayOneChallenges());
   };
 
   const [pdfGenerating, setPdfGenerating] = useState(false);
@@ -406,6 +464,8 @@ export default function EmployerDashboard() {
       {/* Luxury Minimal Selector Tabs */}
       <div className="flex border-b border-white/5 pb-1 gap-1 flex-wrap">
         {[
+          { id: 'blind-radar', label: 'Blind Talent Radar', icon: Radar },
+          { id: 'dayone', label: 'Day One Challenges', icon: Zap },
           { id: 'analytics', label: 'Candidate Analytics', icon: BarChart2 },
           { id: 'hiring', label: 'Hiring Post Engine', icon: Briefcase },
           { id: 'talent', label: 'AI Talent Discovery', icon: Target },
@@ -431,6 +491,216 @@ export default function EmployerDashboard() {
       </div>
 
       <AnimatePresence mode="wait">
+
+        {/* Tab: Blind Talent Radar */}
+        {activeTab === 'blind-radar' && (
+          <motion.div
+            key="blind-radar"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-6"
+          >
+            <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-5 flex items-start gap-3">
+              <EyeOff className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-emerald-300 font-bold uppercase tracking-wider mb-1">Bias-Free Discovery Mode</p>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Discover talent by verified skill telemetry and performance metrics first. Names, photos, and schools stay hidden until you shortlist a candidate — then identity is revealed with their Career Passport.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {blindPool.map((candidate) => (
+                <div
+                  key={candidate.anonymousId}
+                  className={`p-6 rounded-3xl border backdrop-blur-xl flex flex-col gap-4 min-h-[380px] transition-all ${
+                    candidate.isRevealed
+                      ? "bg-slate-900/60 border-luxury-gold/30"
+                      : "bg-slate-900/40 border-white/10 hover:border-emerald-500/30"
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      {candidate.isRevealed ? (
+                        <Eye className="w-4 h-4 text-luxury-gold" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-slate-500" />
+                      )}
+                      <span className="font-mono text-sm font-bold text-white">{candidate.anonymousId}</span>
+                    </div>
+                    <div className="px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">
+                      {candidate.nexusScore} NEXUS
+                    </div>
+                  </div>
+
+                  {candidate.isRevealed && candidate.realName ? (
+                    <div className="bg-luxury-gold/10 border border-luxury-gold/20 rounded-xl p-3">
+                      <p className="text-sm font-bold text-white">{candidate.realName}</p>
+                      <p className="text-[10px] text-luxury-gold font-mono">{candidate.realTitle}</p>
+                      {candidate.passportId && (
+                        <p className="text-[9px] text-slate-500 font-mono mt-1">Passport: {candidate.passportId}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-slate-500 font-mono uppercase">Identity Classified</p>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Simulation", value: `${candidate.simulationRate}%` },
+                      { label: "Interview", value: `${candidate.interviewScore}/100` },
+                      { label: "Confidence", value: `${candidate.confidenceScore}/100` },
+                      { label: "Missions", value: candidate.missionsCompleted },
+                    ].map((m) => (
+                      <div key={m.label} className="bg-black/30 border border-white/5 rounded-xl p-2.5 text-center">
+                        <p className="text-sm font-bold text-white">{m.value}</p>
+                        <p className="text-[8px] text-slate-500 font-mono uppercase">{m.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] text-slate-500 font-mono uppercase mb-2">Skill Heatmap</p>
+                    <div className="space-y-1.5">
+                      {Object.entries(candidate.skillHeatmap).map(([skill, pct]) => (
+                        <div key={skill} className="flex items-center gap-2">
+                          <span className="text-[9px] text-slate-400 w-16 truncate">{skill}</span>
+                          <div className="flex-grow h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-[8px] font-mono text-emerald-400 w-6">{pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1 mt-auto">
+                    {candidate.topSkills.map((sk) => (
+                      <span key={sk} className="text-[8px] font-mono bg-white/5 text-slate-300 px-2 py-0.5 rounded-md border border-white/5">
+                        {sk}
+                      </span>
+                    ))}
+                  </div>
+
+                  {!candidate.isShortlisted ? (
+                    <button
+                      onClick={() => handleShortlistBlind(candidate.anonymousId)}
+                      className="w-full py-3 bg-white hover:bg-zinc-200 text-black text-xs font-bold rounded-xl uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Shortlist & Reveal Identity
+                    </button>
+                  ) : (
+                    <div className="w-full py-3 bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 text-xs font-bold rounded-xl uppercase tracking-wider text-center flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Shortlisted — Passport Unlocked
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Tab: Day One Employer Challenges */}
+        {activeTab === 'dayone' && (
+          <motion.div
+            key="dayone"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+          >
+            <div className="lg:col-span-5 bg-slate-900/40 border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-4 h-4 text-luxury-gold" />
+                <h4 className="text-white font-bold">Create Day One Challenge</h4>
+              </div>
+              <p className="text-[10px] text-slate-400 mb-5 leading-relaxed">
+                Inject your real workflow into candidate simulations. Candidates complete your 2-hour micro-challenge before applying — results feed into their Verified Career Passport.
+              </p>
+              <form onSubmit={handleCreateDayOneChallenge} className="flex flex-col gap-3">
+                <input
+                  type="text"
+                  placeholder="Challenge title (e.g. API Latency Debug Sprint)"
+                  value={challengeTitle}
+                  onChange={(e) => setChallengeTitle(e.target.value)}
+                  className="bg-white/5 border border-white/10 text-xs text-white p-3 rounded-xl outline-none focus:border-luxury-gold/40"
+                  required
+                />
+                <select
+                  value={challengeRole}
+                  onChange={(e) => setChallengeRole(e.target.value)}
+                  className="bg-slate-950 border border-white/10 text-xs text-white p-3 rounded-xl outline-none"
+                >
+                  <option value="AI Core Synaptic Architect">AI Core Synaptic Architect</option>
+                  <option value="Quantum Systems Architect">Quantum Systems Architect</option>
+                  <option value="Bio-Telemetry Specialist">Bio-Telemetry Specialist</option>
+                </select>
+                <textarea
+                  rows={3}
+                  placeholder="Challenge description — what must the candidate accomplish?"
+                  value={challengeDesc}
+                  onChange={(e) => setChallengeDesc(e.target.value)}
+                  className="bg-white/5 border border-white/10 text-xs text-white p-3 rounded-xl outline-none resize-none"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Task 1 (e.g. Profile bottleneck layer)"
+                  value={challengeTask1}
+                  onChange={(e) => setChallengeTask1(e.target.value)}
+                  className="bg-white/5 border border-white/10 text-xs text-white p-3 rounded-xl outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Task 2 (e.g. Deploy hotfix patch)"
+                  value={challengeTask2}
+                  onChange={(e) => setChallengeTask2(e.target.value)}
+                  className="bg-white/5 border border-white/10 text-xs text-white p-3 rounded-xl outline-none"
+                />
+                <button
+                  type="submit"
+                  className="py-3.5 bg-luxury-gold hover:bg-luxury-gold-hover text-black font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer"
+                >
+                  Publish Day One Challenge
+                </button>
+              </form>
+            </div>
+
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                Active Challenges ({dayOneChallenges.length})
+              </span>
+              {dayOneChallenges.map((ch) => (
+                <div key={ch.id} className="p-6 bg-slate-900/40 border border-white/10 rounded-3xl flex flex-col gap-3 relative">
+                  <button
+                    onClick={() => handleDeleteChallenge(ch.id)}
+                    className="absolute top-4 right-4 text-slate-500 hover:text-red-400 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-luxury-gold" />
+                    <span className="text-[9px] font-mono text-emerald-400 uppercase">{ch.duration} · {ch.difficulty}</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-white">{ch.title}</h4>
+                  <p className="text-xs text-slate-400">{ch.description}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ch.tasks.map((t) => (
+                      <span key={t.id} className="text-[9px] font-mono bg-white/5 text-slate-300 px-2 py-1 rounded-md border border-white/5">
+                        {t.title}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-slate-500 font-mono">Role: {ch.role} · Candidates see this in Sim Lab</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
         
         {/* Tab 1: Analytics Screen */}
         {activeTab === 'analytics' && (

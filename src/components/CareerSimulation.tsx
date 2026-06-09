@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Terminal, Shield, Play, Command, Send, AlertTriangle, Check, RefreshCw, Server, Users, ArrowRight } from "lucide-react";
+import { Terminal, Shield, Play, Command, Send, AlertTriangle, Check, RefreshCw, Server, Users, ArrowRight, Zap } from "lucide-react";
 import { SimTask, SimMessage } from "../types";
+import {
+  getDayOneChallenges,
+  DayOneChallenge,
+  recordMissionComplete,
+  recordDayOneChallengeComplete,
+} from "../utils/passportStore";
 
 export default function CareerSimulation() {
   const [selectedCareer, setSelectedCareer] = useState("Quantum Cognitive Engineer");
@@ -16,9 +22,43 @@ export default function CareerSimulation() {
   const [commandInput, setCommandInput] = useState("");
   const [activeTasks, setActiveTasks] = useState<SimTask[]>([]);
   const [messages, setMessages] = useState<SimMessage[]>([]);
+  const [simMode, setSimMode] = useState<"career" | "dayone">("career");
+  const [selectedChallenge, setSelectedChallenge] = useState<DayOneChallenge | null>(null);
+  const [employerChallenges] = useState<DayOneChallenge[]>(() => getDayOneChallenges());
+
+  const handleStartDayOneChallenge = (challenge: DayOneChallenge) => {
+    setSelectedChallenge(challenge);
+    setSimMode("dayone");
+    setIsSimulating(true);
+    setSelectedCareer(challenge.role);
+    const tasks: SimTask[] = challenge.tasks.map((t) => ({
+      ...t,
+      difficulty: challenge.difficulty,
+      status: "pending" as const,
+    }));
+    setActiveTasks(tasks);
+    setMessages([
+      {
+        speaker: challenge.employerName,
+        role: "Tech Lead",
+        text: `Welcome to your Day One Challenge: "${challenge.title}". You have ${challenge.duration} to complete all tasks. This is a real employer workflow — your results feed into your Career Passport.`,
+        avatarSeed: "employer",
+      },
+    ]);
+    setSystemSync(75);
+    setTerminalOutput((prev) => [
+      ...prev,
+      `>> DAY ONE EMPLOYER CHALLENGE LOADED: [${challenge.title.toUpperCase()}]`,
+      `>> EMPLOYER: ${challenge.employerName}`,
+      `>> DURATION BUDGET: ${challenge.duration}`,
+      ">> PASSPORT TELEMETRY RECORDING ACTIVE."
+    ]);
+  };
 
   // Simulation Pre-sets based on Career selection
   const handleStartSimulation = async () => {
+    setSimMode("career");
+    setSelectedChallenge(null);
     setIsSimulating(true);
     setTerminalOutput(prev => [...prev, `>> LOADED SYSTEM PARAMETERS FOR ELITE CAREER TRAJECTORY: [${selectedCareer.toUpperCase()}] ...`]);
     try {
@@ -46,18 +86,31 @@ export default function CareerSimulation() {
 
   // Simulate solving an active task
   const resolveTask = (taskId: string) => {
-    setActiveTasks(prev => prev.map(t => {
-      if (t.id === taskId) {
+    setActiveTasks(prev => {
+      const updated = prev.map(t => {
+        if (t.id === taskId) {
+          setTerminalOutput(old => [
+            ...old,
+            `>> DEPLOYING COMPREHENSIVE KERNEL PATCH: ${t.title.toUpperCase()}...`,
+            ">> REPROGRAMMING NEURAL SYSTOLIC REGISTERS...",
+            `>> SYSTEM PATCH SUCCESSFULLY COMMITTED ✅`
+          ]);
+          recordMissionComplete(t.difficulty, selectedCareer);
+          return { ...t, status: "completed" as const };
+        }
+        return t;
+      });
+      const allDone = updated.every(t => t.status === "completed");
+      if (allDone && simMode === "dayone" && selectedChallenge) {
+        recordDayOneChallengeComplete();
         setTerminalOutput(old => [
           ...old,
-          `>> DEPLOYING COMPREHENSIVE KERNEL PATCH: ${t.title.toUpperCase()}...`,
-          ">> REPROGRAMMING NEURAL SYSTOLIC REGISTERS...",
-          `>> SYSTEM PATCH SUCCESSFULLY COMMITTED ✅`
+          ">> DAY ONE CHALLENGE COMPLETE — PASSPORT UPDATED",
+          `>> EMPLOYER ${selectedChallenge.employerName} NOTIFIED OF YOUR COMPLETION`
         ]);
-        return { ...t, status: "completed" };
       }
-      return t;
-    }));
+      return updated;
+    });
     setSystemSync(prev => Math.min(prev + 12, 100));
   };
 
@@ -101,13 +154,14 @@ export default function CareerSimulation() {
 
       <AnimatePresence mode="wait">
         {!isSimulating ? (
-          /* CONFIGURATION VIEW: Let user choose career & boot up */
           <motion.div
             key="config-view"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="max-w-3xl mx-auto w-full bg-luxury-beige/[0.04] backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] shadow-2xl flex flex-col items-center text-center gap-8 relative overflow-hidden"
+            className="flex flex-col gap-8 w-full"
+          >
+          <div className="max-w-3xl mx-auto w-full bg-luxury-beige/[0.04] backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] shadow-2xl flex flex-col items-center text-center gap-8 relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-24 h-24 bg-luxury-gold/[0.01] rounded-full blur-xl" />
             <div className="absolute bottom-0 right-0 w-24 h-24 bg-luxury-gold/[0.01] rounded-full blur-xl" />
@@ -144,6 +198,44 @@ export default function CareerSimulation() {
                 Boot Grid
               </button>
             </div>
+          </div>
+
+          {/* Day One Employer Challenges */}
+          {employerChallenges.length > 0 && (
+            <div className="w-full max-w-5xl mx-auto">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-4 h-4 text-luxury-gold" />
+                <span className="text-[10px] font-mono text-luxury-gold uppercase tracking-widest">Day One Employer Challenges</span>
+                <span className="text-[9px] text-slate-500 font-mono">— Try the real job before you apply</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {employerChallenges.map((ch) => (
+                  <div
+                    key={ch.id}
+                    className="p-6 bg-slate-900/40 border border-emerald-500/20 rounded-3xl hover:border-emerald-500/40 transition-all flex flex-col gap-3 text-left"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[9px] font-mono text-emerald-400 uppercase bg-emerald-950/30 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                          {ch.employerName}
+                        </span>
+                        <h4 className="text-white font-bold mt-2">{ch.title}</h4>
+                      </div>
+                      <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-2 py-1 rounded-lg">{ch.duration}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">{ch.description}</p>
+                    <button
+                      onClick={() => handleStartDayOneChallenge(ch)}
+                      className="mt-auto py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <Play className="w-3.5 h-3.5" />
+                      Accept Day One Challenge
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           </motion.div>
         ) : (
           /* ACTIVE INTERACTIVE WORKSPACE TERMINAL */
